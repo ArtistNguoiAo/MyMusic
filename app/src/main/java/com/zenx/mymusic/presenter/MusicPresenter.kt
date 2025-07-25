@@ -5,10 +5,12 @@ import android.content.ServiceConnection
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.util.Log
 import com.zenx.mymusic.contract.MusicContract
 import com.zenx.mymusic.model.Playlist
 import com.zenx.mymusic.model.Song
 import com.zenx.mymusic.service.MusicService
+import kotlinx.coroutines.launch
 
 class MusicPresenter(private val context: Context, private val model: MusicContract.Model) : MusicContract.Presenter {
     
@@ -41,14 +43,24 @@ class MusicPresenter(private val context: Context, private val model: MusicContr
         stopProgressUpdates()
     }
     
+    private val coroutineScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main)
+    
     override fun loadSongs() {
-        try {
-            val songs = model.getSongs()
-            playlist = Playlist(songs)
-            view?.showSongs(songs)
-            musicService?.setPlaylist(playlist!!)
-        } catch (e: Exception) {
-            view?.showError("Failed to load songs: ${e.message}")
+        view?.let { view ->
+            // Show loading state if needed
+            
+            // Launch coroutine in the presenter's scope
+            coroutineScope.launch {
+                try {
+                    val songs = model.getSongs()
+                    Log.d("TrungLQ", "loadSongs: ${songs}")
+                    playlist = Playlist(songs)
+                    view.showSongs(songs)
+                    musicService?.setPlaylist(playlist!!)
+                } catch (e: Exception) {
+                    view.showError("Failed to load songs: ${e.message}")
+                }
+            }
         }
     }
     

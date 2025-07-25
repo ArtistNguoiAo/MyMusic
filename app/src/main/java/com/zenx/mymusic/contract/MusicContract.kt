@@ -25,6 +25,6 @@ interface MusicContract {
     }
     
     interface Model {
-        fun getSongs(): List<Song>
+        suspend fun getSongs(): List<Song>
     }
 }

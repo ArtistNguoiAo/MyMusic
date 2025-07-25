@@ -1,6 +1,6 @@
 package com.zenx.mymusic
 
-import MusicModel
+import com.zenx.mymusic.model.MusicModel
 import MusicPresenter
 import com.zenx.mymusic.model.Song
 import com.zenx.mymusic.adapter.SongsAdapter
