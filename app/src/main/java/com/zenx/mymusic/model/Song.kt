@@ -1,23 +1,22 @@
 package com.zenx.mymusic.model
 
+import com.google.gson.annotations.SerializedName
+
 /**
  * Data class representing a song from the API
  * @property id Unique identifier for the song
- * @property title The name/title of the song
- * @property data The URL of the song (YouTube URL in this case)
- * @property artist The artist name (defaults to "Unknown Artist")
- * @property album The album name (defaults to "Unknown Album")
- * @property duration The duration of the song in milliseconds (defaults to 0)
- * @property albumArt Optional URL to the album art
+ * @property name The name/title of the song
+ * @property url The YouTube URL of the song
  */
 data class Song(
+    @SerializedName("id")
     val id: Long,
+    
+    @SerializedName("name")
     val name: String,
-    val url: String,
-    val artist: String = "Unknown Artist",
-    val album: String = "Unknown Album",
-    val duration: Long = 0,
-    val albumArt: String? = null
+    
+    @SerializedName("url")
+    val url: String
 ) {
     // For backward compatibility with existing code
     val title: String
@@ -25,6 +24,12 @@ data class Song(
         
     val data: String
         get() = url
+        
+    // Default values for compatibility
+    val artist: String = "Unknown Artist"
+    val album: String = "Unknown Album"
+    val duration: Long = 0
+    val albumArt: String? = null
 }
 
 data class Playlist(
