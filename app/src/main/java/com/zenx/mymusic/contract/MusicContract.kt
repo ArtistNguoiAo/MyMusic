@@ -1,3 +1,7 @@
+package com.zenx.mymusic.contract
+
+import com.zenx.mymusic.model.Song
+
 interface MusicContract {
     
     interface View {

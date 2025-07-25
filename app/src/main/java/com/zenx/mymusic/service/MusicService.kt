@@ -1,3 +1,7 @@
+package com.zenx.mymusic.service
+
+import com.zenx.mymusic.model.Playlist
+import com.zenx.mymusic.model.Song
 import android.app.*
 import android.content.Intent
 import android.media.MediaPlayer

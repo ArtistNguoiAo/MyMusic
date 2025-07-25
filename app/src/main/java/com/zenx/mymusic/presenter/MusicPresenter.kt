@@ -5,6 +5,10 @@ import android.content.ServiceConnection
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import com.zenx.mymusic.contract.MusicContract
+import com.zenx.mymusic.model.Playlist
+import com.zenx.mymusic.model.Song
+import com.zenx.mymusic.service.MusicService
 
 class MusicPresenter(private val context: Context, private val model: MusicContract.Model) : MusicContract.Presenter {
     

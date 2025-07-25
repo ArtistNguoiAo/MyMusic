@@ -1,3 +1,5 @@
+package com.zenx.mymusic.model
+
 data class Song(
     val id: Long,
     val title: String,

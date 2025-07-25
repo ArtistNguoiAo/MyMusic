@@ -1,5 +1,7 @@
 import android.content.Context
 import android.provider.MediaStore
+import com.zenx.mymusic.contract.MusicContract
+import com.zenx.mymusic.model.Song
 
 class MusicModel(private val context: Context) : MusicContract.Model {
     

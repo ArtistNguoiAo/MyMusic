@@ -1,3 +1,6 @@
+package com.zenx.mymusic.adapter
+
+import com.zenx.mymusic.model.Song
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup

@@ -23,7 +23,7 @@
 
     </LinearLayout>
 
-    <!-- Song List -->
+    <!-- com.zenx.mymusic.model.Song List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewSongs"
         android:layout_width="match_parent"
