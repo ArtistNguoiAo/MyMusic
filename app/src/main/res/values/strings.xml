@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Music Player</string>
+    <string name="permission_required">Permission required to access music files</string>
+    <string name="no_songs_found">No songs found on device</string>
+</resources>
