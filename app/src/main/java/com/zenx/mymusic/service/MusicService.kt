@@ -1,7 +1,5 @@
 package com.zenx.mymusic.service
 
-import com.zenx.mymusic.model.Playlist
-import com.zenx.mymusic.model.Song
 import android.app.*
 import android.content.Intent
 import android.media.MediaPlayer
@@ -10,7 +8,10 @@ import android.os.Build
 import android.os.IBinder
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.zenx.mymusic.R
+import com.zenx.mymusic.model.Playlist
+import com.zenx.mymusic.model.Song
 
 class MusicService : Service(), MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener {
 

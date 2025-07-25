@@ -1,14 +1,11 @@
 package com.zenx.mymusic
 
-import com.zenx.mymusic.model.MusicModel
-import MusicPresenter
-import com.zenx.mymusic.model.Song
-import com.zenx.mymusic.adapter.SongsAdapter
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -16,7 +13,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.zenx.mymusic.adapter.SongsAdapter
 import com.zenx.mymusic.contract.MusicContract
+import com.zenx.mymusic.model.MusicModel
+import com.zenx.mymusic.model.Song
+import com.zenx.mymusic.presenter.MusicPresenter
 
 class MainActivity : AppCompatActivity(), MusicContract.View {
 
