@@ -100,6 +100,19 @@ class MainActivity : AppCompatActivity(), MusicContract.View {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == PERMISSION_REQUEST_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission was granted, load the songs
+                presenter.loadSongs()
+            } else {
+                // Permission denied, show a message to the user
+                Toast.makeText(
+                    this,
+                    "Permission is required to access music files",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 presenter.loadSongs()
             } else {
                 Toast.makeText(this, "Permission required to access music files", Toast.LENGTH_LONG).show()

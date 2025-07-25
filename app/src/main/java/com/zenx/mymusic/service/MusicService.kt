@@ -1,11 +1,16 @@
 package com.zenx.mymusic.service
 
 import android.app.*
+import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -19,6 +24,35 @@ class MusicService : Service(), MediaPlayer.OnCompletionListener, MediaPlayer.On
     private var currentSong: Song? = null
     private var playlist: Playlist? = null
     private val binder = MusicBinder()
+    private var audioManager: AudioManager? = null
+    private var audioFocusRequest: AudioFocusRequest? = null
+    private var audioFocusGranted = false
+    
+    private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
+        when (focusChange) {
+            AudioManager.AUDIOFOCUS_GAIN -> {
+                // Resume playback
+                mediaPlayer?.setVolume(1.0f, 1.0f)
+                if (!isPlaying()) {
+                    playPause()
+                }
+            }
+            AudioManager.AUDIOFOCUS_LOSS -> {
+                // Lost focus for an unbounded amount of time: stop playback and release resources
+                stopSelf()
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                // Lost focus for a short time, but we have to stop playback
+                if (isPlaying()) {
+                    playPause()
+                }
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                // Lower the volume, keep playing
+                mediaPlayer?.setVolume(0.1f, 0.1f)
+            }
+        }
+    }
 
     companion object {
         const val CHANNEL_ID = "MusicPlayerChannel"
@@ -32,10 +66,12 @@ class MusicService : Service(), MediaPlayer.OnCompletionListener, MediaPlayer.On
         fun getService(): MusicService = this@MusicService
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
         super.onCreate()
-        createNotificationChannel()
+        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createNotificationChannel()
+        }
     }
 
     override fun onBind(intent: Intent?): IBinder = binder
@@ -56,16 +92,67 @@ class MusicService : Service(), MediaPlayer.OnCompletionListener, MediaPlayer.On
     fun playSong(song: Song) {
         currentSong = song
         try {
+            // Release any previous media player
             mediaPlayer?.release()
+            
+            // Request audio focus
+            if (!requestAudioFocus()) {
+                Log.e("MusicService", "Failed to get audio focus")
+                return
+            }
+            
             mediaPlayer = MediaPlayer().apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .build()
+                )
                 setDataSource(song.data)
                 setOnCompletionListener(this@MusicService)
                 setOnPreparedListener(this@MusicService)
+                setOnErrorListener { _, what, extra ->
+                    Log.e("MusicService", "MediaPlayer error: what=$what, extra=$extra")
+                    stopSelf()
+                    true
+                }
                 prepareAsync()
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("MusicService", "Error playing song", e)
+            stopSelf()
         }
+    }
+    
+    private fun requestAudioFocus(): Boolean {
+        audioManager?.let { am ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                    .setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .build()
+                    )
+                    .setAcceptsDelayedFocusGain(true)
+                    .setOnAudioFocusChangeListener(audioFocusChangeListener)
+                    .build()
+                
+                val result = am.requestAudioFocus(audioFocusRequest!!)
+                audioFocusGranted = result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+                return audioFocusGranted
+            } else {
+                @Suppress("DEPRECATION")
+                val result = am.requestAudioFocus(
+                    audioFocusChangeListener,
+                    AudioManager.STREAM_MUSIC,
+                    AudioManager.AUDIOFOCUS_GAIN
+                )
+                audioFocusGranted = result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+                return audioFocusGranted
+            }
+        }
+        return false
     }
 
     fun playPause() {
@@ -159,7 +246,24 @@ class MusicService : Service(), MediaPlayer.OnCompletionListener, MediaPlayer.On
 
     override fun onDestroy() {
         super.onDestroy()
+        // Release media player
         mediaPlayer?.release()
         mediaPlayer = null
+        
+        // Abandon audio focus
+        audioManager?.let { am ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                audioFocusRequest?.let { request ->
+                    am.abandonAudioFocusRequest(request)
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                am.abandonAudioFocus(audioFocusChangeListener)
+            }
+        }
+        
+        // Stop foreground service and remove notification
+        stopForeground(true)
+        stopSelf()
     }
 }
